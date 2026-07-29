@@ -315,6 +315,21 @@ document.getElementById("logo").src = "data:image/png;base64,iVBORw0KGgoAAAANSUh
 
 const $ = id => document.getElementById(id);
 
+/* % do centro primário por área (Tabela 14.2) — vai gravado na coluna "Centro de Receita" */
+const AREAS = {
+  "Contencioso":   8.33,
+  "Trabalhista":   8.33,
+  "Bancário":      4.17,
+  "Criminal":      2.92,
+  "Público":       8.33,
+  "Tributário":    8.33,
+  "Extrajudicial": 8.33
+};
+function pctArea(area){
+  const v = AREAS[area];
+  return (v === undefined) ? "" : v.toFixed(2).replace(".",",")+"%";
+}
+
 /* ---------- Máscara de moeda ---------- */
 function formatMoney(raw){
   let d = raw.replace(/\D/g,"");
@@ -412,6 +427,7 @@ $("form").addEventListener("submit", async (e)=>{
     valorTexto:    "R$ " + $("valor").value,
     cidade:        $("cidade").value,
     area:          $("area").value,
+    centroReceita: pctArea($("area").value),
     observacoes:   $("obs").value.trim()
   };
 
