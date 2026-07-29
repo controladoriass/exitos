@@ -178,6 +178,39 @@
   .modal-close.alt{background:var(--err)}
   .modal-close.alt:hover{background:#a93226}
 
+  /* ---- Dropzone de anexos ---- */
+  .dropzone{
+    border:1.5px dashed var(--field-border);
+    border-radius:12px;
+    background:#fafbfc;
+    padding:22px 18px;
+    display:flex;align-items:center;justify-content:center;gap:12px;
+    text-align:center;cursor:pointer;color:var(--txt-dim);
+    transition:border-color .18s, background .18s, color .18s;
+  }
+  .dropzone:hover,.dropzone:focus{
+    outline:none;border-color:var(--gold);background:#fffdf9;color:var(--navy);
+  }
+  .dropzone.dragover{border-color:var(--gold);background:rgba(207,163,110,.10);color:var(--navy)}
+  .dz-ico{flex:0 0 auto;color:var(--gold)}
+  .dz-txt{font-size:13.5px;font-weight:600;line-height:1.35}
+  .dz-txt small{font-weight:500;color:var(--txt-dim);font-size:11.5px}
+
+  .file-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:7px}
+  .file-list li{
+    display:flex;align-items:center;gap:10px;
+    background:#fff;border:1px solid var(--field-border);border-radius:9px;
+    padding:9px 12px;font-size:13px;color:var(--navy);
+  }
+  .file-list li .fname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+  .file-list li .fsize{color:var(--txt-dim);font-size:11.5px;flex:0 0 auto}
+  .file-list li .frm{
+    flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:none;cursor:pointer;
+    background:rgba(192,57,43,.10);color:var(--err);font-size:15px;font-weight:700;line-height:1;
+    display:flex;align-items:center;justify-content:center;transition:background .15s;
+  }
+  .file-list li .frm:hover{background:rgba(192,57,43,.22)}
+
   @media (max-width:560px){
     .grid{grid-template-columns:1fr}
     header.top h1{font-size:24px}
@@ -262,6 +295,16 @@
         <select id="centro" required disabled>
           <option value="" disabled selected>Escolha a Área Jurídica primeiro…</option>
         </select>
+      </div>
+
+      <div class="field full">
+        <label>Anexos <span class="opt">(opcional)</span></label>
+        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Anexar arquivos">
+          <input type="file" id="arquivos" multiple hidden>
+          <svg class="dz-ico" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span class="dz-txt">Clique ou arraste arquivos aqui<br><small>qualquer formato · pode selecionar vários</small></span>
+        </div>
+        <ul class="file-list" id="fileList"></ul>
       </div>
 
     </div>
@@ -358,6 +401,68 @@ function montarCentro(){
 }
 $("area").addEventListener("change", montarCentro);
 
+/* ---------- Anexos (drag & drop + clique + lista) ---------- */
+let arquivosSelecionados = []; // {file, id}
+let seqArquivo = 0;
+
+function humanSize(bytes){
+  if(bytes < 1024) return bytes + " B";
+  if(bytes < 1048576) return (bytes/1024).toFixed(0) + " KB";
+  return (bytes/1048576).toFixed(1) + " MB";
+}
+function renderFileList(){
+  const ul = $("fileList");
+  ul.innerHTML = "";
+  arquivosSelecionados.forEach(item=>{
+    const li = document.createElement("li");
+    li.innerHTML =
+      '<span class="fname"></span>' +
+      '<span class="fsize">'+humanSize(item.file.size)+'</span>' +
+      '<button type="button" class="frm" aria-label="Remover">&times;</button>';
+    li.querySelector(".fname").textContent = item.file.name;
+    li.querySelector(".frm").addEventListener("click", ()=>{
+      arquivosSelecionados = arquivosSelecionados.filter(a=>a.id !== item.id);
+      renderFileList();
+    });
+    ul.appendChild(li);
+  });
+}
+function adicionarArquivos(fileList){
+  Array.from(fileList).forEach(f=>{
+    arquivosSelecionados.push({file:f, id:++seqArquivo});
+  });
+  renderFileList();
+}
+
+const dz = $("dropzone");
+dz.addEventListener("click", ()=> $("arquivos").click());
+dz.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("arquivos").click(); } });
+$("arquivos").addEventListener("change", e=>{ adicionarArquivos(e.target.files); e.target.value=""; });
+["dragenter","dragover"].forEach(ev=> dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add("dragover"); }));
+["dragleave","drop"].forEach(ev=> dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove("dragover"); }));
+dz.addEventListener("drop", e=>{ if(e.dataTransfer.files) adicionarArquivos(e.dataTransfer.files); });
+
+/* Lê os arquivos como base64 para enviar ao Apps Script */
+function lerArquivoBase64(file){
+  return new Promise((resolve, reject)=>{
+    const r = new FileReader();
+    r.onload = ()=>{
+      // r.result = "data:mime;base64,XXXX" → separa
+      const base64 = String(r.result).split(",")[1] || "";
+      resolve({ nome:file.name, tipo:file.type||"application/octet-stream", dados:base64 });
+    };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+async function anexosParaEnvio(){
+  const lidos = [];
+  for(const item of arquivosSelecionados){
+    lidos.push(await lerArquivoBase64(item.file));
+  }
+  return lidos;
+}
+
 /* ---------- Máscara de moeda ---------- */
 function formatMoney(raw){
   let d = raw.replace(/\D/g,"");
@@ -446,19 +551,6 @@ $("form").addEventListener("submit", async (e)=>{
     $("valor").focus(); return;
   }
 
-  const payload = {
-    dataHora:      new Date().toLocaleString("pt-BR"),
-    tipo:          $("tipo").value,
-    processo:      $("processo").value.trim(),
-    cliente:       $("cliente").value.trim(),
-    valor:         moneyToNumber($("valor").value),
-    valorTexto:    "R$ " + $("valor").value,
-    cidade:        $("cidade").value,
-    area:          $("area").value,
-    centroReceita: $("centro").value,
-    observacoes:   $("obs").value.trim()
-  };
-
   btn.disabled = true;
   abrirModalLoading();
   const t0 = Date.now();
@@ -473,9 +565,33 @@ $("form").addEventListener("submit", async (e)=>{
     }, espera);
   };
 
+  // Lê os anexos (base64) — pode demorar se forem grandes
+  let anexos = [];
+  try{
+    anexos = await anexosParaEnvio();
+  }catch(err){
+    console.error("erro lendo anexos:", err);
+    finalizar(false, "Não foi possível ler os arquivos anexados.");
+    return;
+  }
+
+  const payload = {
+    dataHora:      new Date().toLocaleString("pt-BR"),
+    tipo:          $("tipo").value,
+    processo:      $("processo").value.trim(),
+    cliente:       $("cliente").value.trim(),
+    valor:         moneyToNumber($("valor").value),
+    valorTexto:    "R$ " + $("valor").value,
+    cidade:        $("cidade").value,
+    area:          $("area").value,
+    centroReceita: $("centro").value,
+    observacoes:   $("obs").value.trim(),
+    anexos:        anexos   // [{nome, tipo, dados(base64)}]
+  };
+
   // MODO TESTE
   if(!APPS_SCRIPT_URL){
-    console.log("[MODO TESTE] payload:", payload);
+    console.log("[MODO TESTE] payload (anexos:"+anexos.length+"):", payload);
     finalizar(true);
     return;
   }
@@ -489,15 +605,15 @@ $("form").addEventListener("submit", async (e)=>{
     });
     finalizar(true);
   }catch(err){
-    console.error("fetch no-cors falhou, tentando fallback:", err);
-    try{
-      const blob = new Blob([JSON.stringify(payload)], {type:"text/plain;charset=utf-8"});
-      if(navigator.sendBeacon(APPS_SCRIPT_URL, blob)){ finalizar(true); }
-      else { throw new Error("sendBeacon retornou false"); }
-    }catch(err2){
-      console.error(err2);
-      finalizar(false, "Não foi possível registrar. Tente novamente.");
+    console.error("fetch no-cors falhou:", err);
+    // sendBeacon só serve p/ payload pequeno (sem anexos)
+    if(anexos.length === 0){
+      try{
+        const blob = new Blob([JSON.stringify(payload)], {type:"text/plain;charset=utf-8"});
+        if(navigator.sendBeacon(APPS_SCRIPT_URL, blob)){ finalizar(true); return; }
+      }catch(_){}
     }
+    finalizar(false, "Não foi possível registrar. Tente novamente.");
   }
 });
 
@@ -507,6 +623,7 @@ function resetForm(){
   $("lbl-num").innerHTML = 'Número do processo <span class="req">*</span>';
   $("processo").required = true;
   montarCentro(); // volta o Centro de Custo ao estado inicial (desabilitado)
+  arquivosSelecionados = []; renderFileList(); // limpa anexos
 }
 </script>
 </body>
