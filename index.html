@@ -247,13 +247,20 @@
         <label>Área Jurídica <span class="req">*</span></label>
         <select id="area" required>
           <option value="" disabled selected>Selecione…</option>
-          <option value="Contencioso">Contencioso — 8,33%</option>
-          <option value="Trabalhista">Trabalhista — 8,33%</option>
-          <option value="Bancário">Bancário — 4,17%</option>
-          <option value="Criminal">Criminal — 2,92%</option>
-          <option value="Público">Público — 8,33%</option>
-          <option value="Tributário">Tributário — 8,33%</option>
-          <option value="Extrajudicial">Extrajudicial — 8,33%</option>
+          <option value="Contencioso">Contencioso</option>
+          <option value="Trabalhista">Trabalhista</option>
+          <option value="Bancário">Bancário</option>
+          <option value="Criminal">Criminal</option>
+          <option value="Público">Público</option>
+          <option value="Tributário">Tributário</option>
+          <option value="Extrajudicial">Extrajudicial</option>
+        </select>
+      </div>
+
+      <div class="field full">
+        <label>Centro de Custo <span class="req">*</span></label>
+        <select id="centro" required disabled>
+          <option value="" disabled selected>Escolha a Área Jurídica primeiro…</option>
         </select>
       </div>
 
@@ -329,6 +336,27 @@ function pctArea(area){
   const v = AREAS[area];
   return (v === undefined) ? "" : v.toFixed(2).replace(".",",")+"%";
 }
+
+const SEM_CENTRO = "Sem centro de custo";
+
+/* Quando escolhe a Área, monta o dropdown Centro de Custo com 2 opções:
+   "Área — %"  e  "Êxito sem centro de custo" */
+function montarCentro(){
+  const area = $("area").value;
+  const sel  = $("centro");
+  if(!area){
+    sel.innerHTML = '<option value="" disabled selected>Escolha a Área Jurídica primeiro…</option>';
+    sel.disabled = true;
+    return;
+  }
+  const pct = pctArea(area);
+  sel.innerHTML =
+    '<option value="" disabled selected>Selecione…</option>' +
+    '<option value="'+pct+'">'+area+' — '+pct+'</option>' +
+    '<option value="'+SEM_CENTRO+'">Êxito sem centro de custo</option>';
+  sel.disabled = false;
+}
+$("area").addEventListener("change", montarCentro);
 
 /* ---------- Máscara de moeda ---------- */
 function formatMoney(raw){
@@ -427,7 +455,7 @@ $("form").addEventListener("submit", async (e)=>{
     valorTexto:    "R$ " + $("valor").value,
     cidade:        $("cidade").value,
     area:          $("area").value,
-    centroReceita: pctArea($("area").value),
+    centroReceita: $("centro").value,
     observacoes:   $("obs").value.trim()
   };
 
@@ -478,6 +506,7 @@ function resetForm(){
   $("lbl-valor").innerHTML = 'Valor do Êxito <span class="req">*</span>';
   $("lbl-num").innerHTML = 'Número do processo <span class="req">*</span>';
   $("processo").required = true;
+  montarCentro(); // volta o Centro de Custo ao estado inicial (desabilitado)
 }
 </script>
 </body>
