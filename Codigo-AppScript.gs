@@ -26,6 +26,7 @@ var CABECALHO = [
   "Cidade",
   "Área Jurídica",
   "Centro de Receita",
+  "Origem do Lead",
   "Anexos",
   "Observações"
 ];
@@ -50,6 +51,7 @@ function doPost(e) {
       dados.cidade        || "",
       dados.area          || "",
       dados.centroReceita || "",
+      dados.origem        || "",
       linkAnexos,
       dados.observacoes   || ""
     ]);

@@ -300,6 +300,20 @@
       </div>
 
       <div class="field full">
+        <label>Origem do Lead <span class="req">*</span></label>
+        <select id="origem" required>
+          <option value="" disabled selected>Selecione…</option>
+          <option value="Sócios">Sócios</option>
+          <option value="Comercial">Comercial</option>
+          <option value="Indicação Externa">Indicação Externa</option>
+          <option value="Indicação Interna">Indicação Interna</option>
+          <option value="Evento">Evento</option>
+          <option value="Parceiro">Parceiro</option>
+          <option value="WhatsApp/Rede Social/Site">WhatsApp/Rede Social/Site</option>
+        </select>
+      </div>
+
+      <div class="field full">
         <label>Anexos <span class="opt">(opcional)</span></label>
         <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Anexar arquivos">
           <input type="file" id="arquivos" multiple hidden>
@@ -581,6 +595,7 @@ $("form").addEventListener("submit", async (e)=>{
     cidade:        $("cidade").value,
     area:          $("area").value,
     centroReceita: $("centro").value,
+    origem:        $("origem").value,
     observacoes:   $("obs").value.trim(),
     anexos:        anexos   // [{nome, tipo, dados(base64)}]
   };
