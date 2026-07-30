@@ -19,10 +19,10 @@ var PASTA_MAE_ID = "1Knr8WtQjYmCCCVCgf6Se_oZip9354uRY";
 // Cabeçalho da planilha (ordem das colunas).
 var CABECALHO = [
   "Data/Hora",
-  "Tipo",
+  "Tipo de Receita",
   "Nº do Processo",
   "Cliente",
-  "Valor (R$)",
+  "Valor a Faturar (R$)",
   "Cidade",
   "Área Jurídica",
   "Centro de Receita",

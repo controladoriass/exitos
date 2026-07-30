@@ -233,12 +233,14 @@
     <div class="grid">
 
       <div class="field full">
-        <label>Tipo de Êxito <span class="req">*</span></label>
+        <label>Tipo de Receita <span class="req">*</span></label>
         <select id="tipo" required>
           <option value="" disabled selected>Selecione o tipo…</option>
           <option value="Êxito Judicial">Êxito Judicial</option>
           <option value="Sucumbência">Sucumbência</option>
           <option value="Extrajudicial">Extrajudicial</option>
+          <option value="Partido Mensal">Partido Mensal</option>
+          <option value="Honorários">Honorários</option>
         </select>
       </div>
 
@@ -253,7 +255,7 @@
       </div>
 
       <div class="field full">
-        <label id="lbl-valor">Valor do Êxito <span class="req">*</span></label>
+        <label id="lbl-valor">Valor a Faturar <span class="req">*</span></label>
         <div class="money">
           <span class="cur">R$</span>
           <input type="text" id="valor" inputmode="decimal" placeholder="0,00" required>
@@ -480,25 +482,19 @@ $("valor").addEventListener("input", e=>{
 });
 
 /* ---------- Rótulos dinâmicos por tipo ---------- */
+// Tipos que normalmente NÃO têm nº de processo → campo vira opcional
+const TIPOS_SEM_PROCESSO = ["Extrajudicial", "Partido Mensal", "Honorários"];
 $("tipo").addEventListener("change", ()=>{
   const t = $("tipo").value;
-  const lblV = $("lbl-valor");
   const lblN = $("lbl-num");
-  if(t === "Sucumbência"){ lblV.innerHTML = 'Valor da Sucumbência <span class="req">*</span>'; }
-  else if(t === "Extrajudicial"){ lblV.innerHTML = 'Valor do Resultado <span class="req">*</span>'; }
-  else { lblV.innerHTML = 'Valor do Êxito <span class="req">*</span>'; }
-
-  // Extrajudicial normalmente não tem nº de processo → vira opcional
-  if(t === "Extrajudicial"){
+  if(TIPOS_SEM_PROCESSO.includes(t)){
     lblN.innerHTML = 'Número do processo <span class="opt">(opcional)</span>';
     $("processo").required = false;
-    // sugere a área Extrajudicial
-    if(!$("area").value) $("area").value = "Extrajudicial";
+    if(t === "Extrajudicial" && !$("area").value) $("area").value = "Extrajudicial";
   } else {
     lblN.innerHTML = 'Número do processo <span class="req">*</span>';
     $("processo").required = true;
   }
-  recalc();
 });
 
 /* ---------- Modal ---------- */
@@ -619,7 +615,6 @@ $("form").addEventListener("submit", async (e)=>{
 
 function resetForm(){
   $("form").reset();
-  $("lbl-valor").innerHTML = 'Valor do Êxito <span class="req">*</span>';
   $("lbl-num").innerHTML = 'Número do processo <span class="req">*</span>';
   $("processo").required = true;
   montarCentro(); // volta o Centro de Custo ao estado inicial (desabilitado)
