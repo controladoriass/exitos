@@ -9,7 +9,8 @@
  * >>> Ver INSTRUCOES.md para publicar como Web App e pegar a URL. <<<
  */
 
-// Nome da aba onde os êxitos serão gravados (será criada se não existir).
+// Nome da aba onde os faturamentos serão gravados (será criada se não existir).
+// Mantido "Êxitos" para preservar histórico da versão anterior do formulário.
 var ABA = "Êxitos";
 
 // Pasta-mãe no Google Drive onde as pastas de cada processo serão criadas.
@@ -17,6 +18,10 @@ var ABA = "Êxitos";
 var PASTA_MAE_ID = "1Knr8WtQjYmCCCVCgf6Se_oZip9354uRY";
 
 // Cabeçalho da planilha (ordem das colunas).
+// ATENÇÃO: se você já tem histórico na aba "Êxitos", as 4 colunas novas
+// (Vencimento, Forma de Pagamento, Parcela, Total de Parcelas) serão inseridas
+// APÓS as antigas quando um novo lançamento for registrado — as linhas antigas
+// simplesmente ficam com essas células em branco, sem quebrar nada.
 var CABECALHO = [
   "Data/Hora",
   "Tipo de Receita",
@@ -27,6 +32,10 @@ var CABECALHO = [
   "Área Jurídica",
   "Centro de Receita",
   "Origem do Lead",
+  "Vencimento",
+  "Forma de Pagamento",
+  "Parcela",
+  "Total de Parcelas",
   "Anexos",
   "Observações"
 ];
@@ -52,6 +61,10 @@ function doPost(e) {
       dados.area          || "",
       dados.centroReceita || "",
       dados.origem        || "",
+      dados.vencimento    || "",
+      dados.formaPgto     || "",
+      dados.parcela       || "",
+      dados.parcelas      || "",
       linkAnexos,
       dados.observacoes   || ""
     ]);

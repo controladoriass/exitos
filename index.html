@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cadastro de Êxitos — Silva &amp; Silva</title>
+<title>Cadastro de Faturamento — Silva &amp; Silva</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -223,7 +223,7 @@
 
   <header class="top">
     <img id="logo" alt="Silva &amp; Silva Advogados Associados">
-    <h1><span class="tick"></span>Cadastro de Êxitos</h1>
+    <h1><span class="tick"></span>Cadastro de Faturamento</h1>
   </header>
 
   <form id="form" class="card" autocomplete="off">
@@ -300,9 +300,9 @@
       </div>
 
       <div class="field full">
-        <label>Origem do Lead <span class="req">*</span></label>
-        <select id="origem" required>
-          <option value="" disabled selected>Selecione…</option>
+        <label>Origem do Lead <span class="opt">(opcional)</span></label>
+        <select id="origem">
+          <option value="" selected>—</option>
           <option value="Sócios">Sócios</option>
           <option value="Comercial">Comercial</option>
           <option value="Indicação Externa">Indicação Externa</option>
@@ -312,6 +312,47 @@
           <option value="WhatsApp/Rede Social/Site">WhatsApp/Rede Social/Site</option>
         </select>
       </div>
+
+    </div>
+
+    <div class="sec-title mt">Detalhes do faturamento</div>
+
+    <div class="grid">
+
+      <div class="field">
+        <label>Vencimento <span class="req">*</span></label>
+        <input type="date" id="vencimento" required>
+      </div>
+
+      <div class="field">
+        <label>Forma de pagamento <span class="opt">(opcional)</span></label>
+        <select id="formaPgto">
+          <option value="" selected>—</option>
+          <option value="Boleto">Boleto</option>
+          <option value="PIX">PIX</option>
+          <option value="TED">TED</option>
+          <option value="Cartão de Crédito">Cartão de Crédito</option>
+          <option value="Cheque">Cheque</option>
+          <option value="Depósito">Depósito</option>
+          <option value="Dinheiro">Dinheiro</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Parcela <span class="opt">(se parcelado)</span></label>
+        <input type="number" id="parcela" min="1" step="1" placeholder="1">
+      </div>
+
+      <div class="field">
+        <label>Total de parcelas <span class="opt">(se parcelado)</span></label>
+        <input type="number" id="parcelas" min="1" step="1" placeholder="1">
+      </div>
+
+    </div>
+
+    <div class="sec-title mt">Anexos e observações</div>
+
+    <div class="grid">
 
       <div class="field full">
         <label>Anexos <span class="opt">(opcional)</span></label>
@@ -323,19 +364,15 @@
         <ul class="file-list" id="fileList"></ul>
       </div>
 
-    </div>
-
-    <div class="sec-title mt">Complemento</div>
-
-    <div class="grid">
       <div class="field full">
         <label>Observações <span class="opt">(opcional)</span></label>
-        <textarea id="obs" placeholder="Ex.: cadastrar sem cobrança / detalhes do êxito…"></textarea>
+        <textarea id="obs" placeholder="Ex.: cadastrar sem cobrança, detalhes do faturamento…"></textarea>
       </div>
+
     </div>
 
     <div class="actions">
-      <button type="submit" class="submit" id="btn">Registrar êxito</button>
+      <button type="submit" class="submit" id="btn">Registrar faturamento</button>
     </div>
 
   </form>
@@ -348,14 +385,14 @@
     <!-- estado: enviando -->
     <div class="modal-loading" id="modalLoading">
       <div class="spinner"></div>
-      <p class="modal-txt">Registrando êxito…</p>
+      <p class="modal-txt">Registrando faturamento…</p>
     </div>
     <!-- estado: sucesso -->
     <div class="modal-done" id="modalDone" style="display:none">
       <div class="check-circle">
         <svg viewBox="0 0 52 52" width="52" height="52"><circle class="ck-c" cx="26" cy="26" r="23" fill="none"/><path class="ck-p" fill="none" d="M15 27 l7 7 l15 -16"/></svg>
       </div>
-      <p class="modal-txt" id="modalMsg">Êxito registrado na planilha!</p>
+      <p class="modal-txt" id="modalMsg">Faturamento registrado na planilha!</p>
       <button type="button" class="modal-close" id="modalClose">Fechar</button>
     </div>
     <!-- estado: erro -->
@@ -596,6 +633,10 @@ $("form").addEventListener("submit", async (e)=>{
     area:          $("area").value,
     centroReceita: $("centro").value,
     origem:        $("origem").value,
+    vencimento:    $("vencimento").value,
+    formaPgto:     $("formaPgto").value,
+    parcela:       $("parcela").value,
+    parcelas:      $("parcelas").value,
     observacoes:   $("obs").value.trim(),
     anexos:        anexos   // [{nome, tipo, dados(base64)}]
   };
